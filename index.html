@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Step 3: Basic page setup -->
+  <meta charset="UTF-8" />
+  <!-- UTF-8 means your page supports all characters -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- This makes the page look good on mobile too -->
+
+  <title>Interview Performance Analyzer</title>
+  <!-- This text appears on the browser tab -->
+
+</head>
+
+<!-- ============================================================
+     STEP 4: CSS — all the styling / colors / layout
+     Everything inside <style> tag is CSS
+     ============================================================ -->
+<style>
+ 
+  /* Reset: remove default margin/padding from all elements */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Body = the whole page */
+  body {
+    font-family: Arial, sans-serif; /* font for everything */
+    background-color: #f4f6f9;     /* light grey background */
+    color: #1a1a1a;                /* dark text */
+    padding: 20px;                 /* space from edges */
+  }
+
+  /* The main container box in the center */
+  .app {
+    max-width: 680px;       /* never wider than 680px */
+    margin: 0 auto;         /* center it horizontally */
+  }
+
+  /* Page title */
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  /* Subtitle below the title */
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+
+  /* Each white card section */
+  .section {
+    background: #ffffff;          /* white background */
+    border: 1px solid #e0e0e0;    /* light grey border */
+    border-radius: 12px;          /* rounded corners */
+    padding: 20px;                /* inside spacing */
+    margin-bottom: 16px;          /* space between cards */
+  }
+
+  /* Section heading like "Technical Skills" */
+  .section h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;    /* ALL CAPS */
+    letter-spacing: 0.05em;       /* spacing between letters */
+    color: #888;
+    margin-bottom: 16px;
+  }
+
+  /* Each slider field wrapper */
+  .field {
+    margin-bottom: 16px;
+  }
+
+  /* Last field inside a section — no extra space at bottom */
+  .field:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Label above each slider */
+  .field label {
+    display: flex;
+    justify-content: space-between; /* label on left, value on right */
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  /* The number shown on the right side of the label */
+  .field label span {
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  /* The range slider itself */
+  input[type=range] {
+    width: 100%;
+    accent-color: #4F46E5; /* purple thumb and track */
+    cursor: pointer;
+  }
+
+  /* The Analyze button */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: #4F46E5;   /* purple */
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* Button hover effect */
+  .btn:hover {
+    background: #4338CA;   /* darker purple on hover */
+  }
+
+  /* Results section — hidden by default */
+  .results {
+    display: none; /* JS will change this to "block" when user clicks Analyze */
+  }
+
+  /* The big score circle at the top of results */
+  .score-circle {
+    text-align: center;
+    padding: 32px 16px;
+  }
+
+  /* The huge percentage number */
+  .big-score {
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    color: #4F46E5;
+  }
+
+  /* Label below the big number */
+  .score-label {
+    font-size: 15px;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  /* Colored badge like "Excellent" or "Average" */
+  .badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 20px;   /* pill shape */
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+
+  /* Two-column grid for Shortlist Chance + Tier cards */
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* two equal columns */
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* Individual metric card */
+  .metric-card {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  /* Big number inside metric card */
+  .metric-val {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* Label inside metric card */
+  .metric-lbl {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* Wrapper for each bar in the breakdown */
+  .bar-wrap {
+    margin-bottom: 12px;
+  }
+
+  /* Label row above each bar (name on left, % on right) */
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 4px;
+  }
+
+  /* Grey background track behind the bar */
+  .bar-track {
+    height: 10px;
+    background: #eeeeee;
+    border-radius: 5px;
+    overflow: hidden; /* so the colored fill doesn't overflow */
+  }
+
+  /* Colored fill inside the track */
+  .bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease; /* smooth animation */
+  }
+
+  /* Lists for weak areas and tips */
+  .tip-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  /* Each item in the list */
+  .tip-list li {
+    padding: 9px 0 9px 20px; /* 20px left padding for the arrow */
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    position: relative; /* needed for the arrow pseudo-element */
+  }
+
+  /* Remove border from the last item */
+  .tip-list li:last-child {
+    border-bottom: none;
+  }
+
+  /* The arrow → before each list item */
+  .tip-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #aaa;
+  }
+
+  /* Blue highlighted box for "Next topic to study" */
+  .next-topic {
+    background: #EEF2FF;
+    color: #3730A3;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* The secondary "Analyze Again" button */
+  .reset-btn {
+    width: 100%;
+    padding: 11px;
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* Hover effect for reset button */
+  .reset-btn:hover {
+    background: #f0f0f0;
+  }
+
+</style>
+
+<!-- ============================================================
+     STEP 5: HTML — the actual visible content / structure
+     ============================================================ -->
+<body>
+
+<div class="app">
+
+  <!-- ========== FORM VIEW (shown first) ========== -->
+  <div id="form-view">
+
+    <h1>🚀 Interview Performance Analyzer</h1>
+    <p class="subtitle">Move the sliders to match your current level, then click Analyze.</p>
+
+    <!-- Section 1: Technical Skills -->
+    <div class="section">
+      <h2>Technical Skills</h2>
+
+      <!-- DSA Slider -->
+      <div class="field">
+        <!-- "id='dsa-val'" is where the live number is shown -->
+        <label>DSA Questions Solved (out of 100) <span id="dsa-val">30</span></label>
+        <!-- oninput fires every time user moves the slider -->
+        <!-- it updates the <span> with id="dsa-val" to show current value -->
+        <input type="range" id="dsa" min="0" max="100" value="30"
+          oninput="document.getElementById('dsa-val').textContent = this.value">
+      </div>
+
+      <!-- Aptitude Slider -->
+      <div class="field">
+        <label>Aptitude Score (out of 100) <span id="apt-val">50</span></label>
+        <input type="range" id="apt" min="0" max="100" value="50"
+          oninput="document.getElementById('apt-val').textContent = this.value">
+      </div>
+
+    </div>
+
+    <!-- Section 2: Soft Skills -->
+    <div class="section">
+      <h2>Communication &amp; Soft Skills</h2>
+
+      <!-- Communication Slider (1 to 10 scale) -->
+      <div class="field">
+        <label>Communication Rating (1–10) <span id="comm-val">5</span></label>
+        <input type="range" id="comm" min="1" max="10" value="5"
+          oninput="document.getElementById('comm-val').textContent = this.value">
+      </div>
+
+      <!-- Mock Interview Slider -->
+      <div class="field">
+        <label>Mock Interview Score (out of 100) <span id="mock-val">50</span></label>
+        <input type="range" id="mock" min="0" max="100" value="50"
+          oninput="document.getElementById('mock-val').textContent = this.value">
+      </div>
+
+    </div>
+
+    <!-- Section 3: Core Subjects -->
+    <div class="section">
+      <h2>Core Subject Confidence (1–10)</h2>
+
+      <!-- OS Slider -->
+      <div class="field">
+        <label>Operating Systems (OS) <span id="os-val">5</span></label>
+        <input type="range" id="os" min="1" max="10" value="5"
+          oninput="document.getElementById('os-val').textContent = this.value">
+      </div>
+
+      <!-- DBMS Slider -->
+      <div class="field">
+        <label>Database Management (DBMS) <span id="dbms-val">5</span></label>
+        <input type="range" id="dbms" min="1" max="10" value="5"
+          oninput="document.getElementById('dbms-val').textContent = this.value">
+      </div>
+
+      <!-- CN Slider -->
+      <div class="field">
+        <label>Computer Networks (CN) <span id="cn-val">5</span></label>
+        <input type="range" id="cn" min="1" max="10" value="5"
+          oninput="document.getElementById('cn-val').textContent = this.value">
+      </div>
+
+    </div>
+
+    <!-- Analyze Button — calls the analyze() function in JS -->
+    <button class="btn" onclick="analyze()">Analyze My Performance →</button>
+
+  </div>
+  <!-- end of form-view -->
+
+
+  <!-- ========== RESULTS VIEW (hidden initially, shown after analysis) ========== -->
+  <div id="results-view" class="results">
+
+    <!-- Big Score Card -->
+    <div class="section score-circle">
+      <div class="big-score" id="res-score">0%</div>
+      <div class="score-label">Placement Readiness Score</div>
+      <div class="badge" id="res-badge"></div>
+    </div>
+
+    <!-- Two metric cards: Shortlist Chance + Tier -->
+    <div class="grid2">
+      <div class="metric-card">
+        <div class="metric-val" id="res-shortlist">-</div>
+        <div class="metric-lbl">Shortlist Chance</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val" id="res-rank">-</div>
+        <div class="metric-lbl">Candidate Tier</div>
+      </div>
+    </div>
+
+    <!-- Score Breakdown Bars -->
+    <div class="section">
+      <h2>Score Breakdown</h2>
+      <!-- bars are injected here by JavaScript -->
+      <div id="bars"></div>
+    </div>
+
+    <!-- Weak Areas -->
+    <div class="section">
+      <h2>Weak Areas</h2>
+      <ul class="tip-list" id="weak-list"></ul>
+    </div>
+
+    <!-- Improvement Tips -->
+    <div class="section">
+      <h2>Improvement Tips</h2>
+      <ul class="tip-list" id="tip-list"></ul>
+    </div>
+
+    <!-- Next Topic -->
+    <div class="section">
+      <h2>Next Best Topic to Study</h2>
+      <div class="next-topic" id="next-topic"></div>
+    </div>
+
+    <!-- Reset Button -->
+    <button class="reset-btn" onclick="reset()">← Analyze Again</button>
+
+  </div>
+  <!-- end of results-view -->
+
+</div>
+<!-- end of .app -->
+
+
+<!-- ============================================================
+     STEP 6: JavaScript — all the logic / calculations
+     Put <script> at the bottom so HTML loads first
+     ============================================================ -->
+<script>
+
+  // ── FUNCTION 1: analyze() ──────────────────────────────────────
+  // Called when user clicks "Analyze My Performance"
+  function analyze() {
+
+    // Step A: Read all slider values
+    // +  in front converts string to number
+    const dsa  = +document.getElementById('dsa').value;   // 0–100
+    const apt  = +document.getElementById('apt').value;   // 0–100
+    const comm = +document.getElementById('comm').value;  // 1–10
+    const mock = +document.getElementById('mock').value;  // 0–100
+    const os   = +document.getElementById('os').value;    // 1–10
+    const dbms = +document.getElementById('dbms').value;  // 1–10
+    const cn   = +document.getElementById('cn').value;    // 1–10
+
+    // Step B: Normalize all values to 0–100 scale
+    // OS, DBMS, CN, Comm are on 1–10 scale → multiply by 10
+    const dsaScore  = dsa;
+    const aptScore  = apt;
+    const commScore = comm * 10;
+    const mockScore = mock;
+    const osScore   = os   * 10;
+    const dbmsScore = dbms * 10;
+    const cnScore   = cn   * 10;
+
+    // Step C: Calculate weighted overall score
+    // DSA is most important (28%), others follow
+    const overall = Math.round(
+      dsaScore  * 0.28 +   // DSA      → 28%
+      aptScore  * 0.15 +   // Aptitude → 15%
+      commScore * 0.15 +   // Comm     → 15%
+      mockScore * 0.15 +   // Mock     → 15%
+      osScore   * 0.09 +   // OS       → 9%
+      dbmsScore * 0.09 +   // DBMS     → 9%
+      cnScore   * 0.09     // CN       → 9%
+    );
+    // Total = 28+15+15+15+9+9+9 = 100% ✓
+
+    // Step D: Show the big score
+    document.getElementById('res-score').textContent = overall + '%';
+
+    // Step E: Determine tier, badge color, and shortlist chance based on score
+    let tier, badgeText, badgeBg, badgeColor, shortlist;
+
+    if (overall >= 80) {
+      tier = 'Top Candidate';
+      badgeText = 'Excellent';
+      badgeBg = '#DCFCE7';    // green background
+      badgeColor = '#166534'; // green text
+      shortlist = 'Very High';
+    } else if (overall >= 65) {
+      tier = 'Strong Candidate';
+      badgeText = 'Good';
+      badgeBg = '#DBEAFE';    // blue background
+      badgeColor = '#1E40AF'; // blue text
+      shortlist = 'High';
+    } else if (overall >= 50) {
+      tier = 'Average Candidate';
+      badgeText = 'Average';
+      badgeBg = '#FEF9C3';    // yellow background
+      badgeColor = '#854D0E'; // brown text
+      shortlist = 'Moderate';
+    } else {
+      tier = 'Needs Work';
+      badgeText = 'Below Average';
+      badgeBg = '#FEE2E2';    // red background
+      badgeColor = '#991B1B'; // red text
+      shortlist = 'Low';
+    }
+
+    // Apply badge styling and text
+    const badgeEl = document.getElementById('res-badge');
+    badgeEl.textContent = badgeText;
+    badgeEl.style.background = badgeBg;
+    badgeEl.style.color = badgeColor;
+
+    // Set shortlist and tier text
+    document.getElementById('res-shortlist').textContent = shortlist;
+    document.getElementById('res-rank').textContent = tier;
+
+    // Step F: Build the bar chart section
+    // Array of all scores with their labels
+    const bars = [
+      { label: 'DSA',           val: dsaScore  },
+      { label: 'Aptitude',      val: aptScore  },
+      { label: 'Communication', val: commScore },
+      { label: 'Mock Interview',val: mockScore },
+      { label: 'OS',            val: osScore   },
+      { label: 'DBMS',          val: dbmsScore },
+      { label: 'CN',            val: cnScore   }
+    ];
+
+    let barsHTML = '';
+
+    bars.forEach(function(item) {
+      // Choose bar color: green if ≥70, blue if ≥50, red if below 50
+      let barColor;
+      if (item.val >= 70) barColor = '#22C55E';       // green
+      else if (item.val >= 50) barColor = '#3B82F6';  // blue
+      else barColor = '#EF4444';                       // red
+
+      // Build the HTML string for one bar
+      barsHTML +=
+        '<div class="bar-wrap">' +
+          '<div class="bar-label">' +
+            '<span>' + item.label + '</span>' +
+            '<span>' + item.val + '%</span>' +
+          '</div>' +
+          '<div class="bar-track">' +
+            '<div class="bar-fill" style="width:' + item.val + '%; background:' + barColor + '"></div>' +
+          '</div>' +
+        '</div>';
+    });
+
+    // Inject all bars into the DOM
+    document.getElementById('bars').innerHTML = barsHTML;
+
+    // Step G: Find weak areas (any score below 60)
+    const weakAreas = bars.filter(function(item) {
+      return item.val < 60;
+    });
+
+    // Sort weakest first
+    weakAreas.sort(function(a, b) {
+      return a.val - b.val;
+    });
+
+    let weakHTML = '';
+
+    if (weakAreas.length === 0) {
+      weakHTML = '<li>No major weak areas. Great job!</li>';
+    } else {
+      weakAreas.forEach(function(item) {
+        weakHTML += '<li>' + item.label + ' — ' + item.val + '% (needs improvement)</li>';
+      });
+    }
+
+    document.getElementById('weak-list').innerHTML = weakHTML;
+
+    // Step H: Generate improvement tips based on weak scores
+    const tips = [];
+
+    if (dsaScore < 60)
+      tips.push('Solve 2–3 LeetCode problems daily. Start with Arrays, then Strings, then Trees.');
+    if (aptScore < 60)
+      tips.push('Practice 10 aptitude questions daily from IndiaBIX or RS Aggarwal.');
+    if (commScore < 60)
+      tips.push('Record yourself answering HR questions and review the recording.');
+    if (mockScore < 60)
+      tips.push('Do 2 mock interviews per week on Pramp or with a friend.');
+    if (osScore < 60)
+      tips.push('Revise OS: process management, scheduling algorithms, deadlocks, memory.');
+    if (dbmsScore < 60)
+      tips.push('Revise DBMS: normalization, SQL queries, transactions, indexing.');
+    if (cnScore < 60)
+      tips.push('Revise CN: OSI model, TCP/IP, DNS, HTTP, subnetting basics.');
+
+    // If no tips needed
+    if (tips.length === 0)
+      tips.push('You are doing great! Focus on company-specific problems on LeetCode.');
+
+    // Build tips HTML
+    let tipsHTML = '';
+    tips.forEach(function(tip) {
+      tipsHTML += '<li>' + tip + '</li>';
+    });
+    document.getElementById('tip-list').innerHTML = tipsHTML;
+
+    // Step I: Suggest the single most important topic to study next
+    // Based on the weakest area found above
+    const topicMap = {
+      'DSA':           'Arrays & Strings on LeetCode — solve 5 easy + 2 medium problems today.',
+      'Aptitude':      'Time & Work, Percentages, and Probability from RS Aggarwal.',
+      'Communication': 'Practice STAR format answers for 5 common HR questions today.',
+      'Mock Interview':'Do one full mock interview on Pramp or with a friend today.',
+      'OS':            'Study CPU Scheduling (FCFS, SJF, Round Robin) with diagrams.',
+      'DBMS':          'Revise Normal Forms (1NF to BCNF) — most asked topic in interviews.',
+      'CN':            'Study the OSI model layers with real-world examples.'
+    };
+
+    // Pick the weakest area, default to DSA if everything is fine
+    const lowestLabel = weakAreas.length > 0 ? weakAreas[0].label : 'DSA';
+    const nextTopic = topicMap[lowestLabel] || 'Keep practicing DSA advanced topics.';
+
+    document.getElementById('next-topic').textContent = nextTopic;
+
+    // Step J: Hide the form, show the results
+    document.getElementById('form-view').style.display  = 'none';
+    document.getElementById('results-view').style.display = 'block';
+
+    // Scroll to top so user sees the score
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  // ── END of analyze() ──────────────────────────────────────────
+
+
+  // ── FUNCTION 2: reset() ───────────────────────────────────────
+  // Called when user clicks "Analyze Again"
+  function reset() {
+    // Show form, hide results
+    document.getElementById('form-view').style.display   = 'block';
+    document.getElementById('results-view').style.display = 'none';
+
+    // Scroll back to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  // ── END of reset() ────────────────────────────────────────────
+
+</script>
+
+</body>
+</html>
